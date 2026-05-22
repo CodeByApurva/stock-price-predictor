@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Price Predictor — PDS Course Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── reset ── */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Inter',sans-serif;
+      background:#0f172a;
+      color:#e2e8f0;
+      line-height:1.6;
+      min-height:100vh;
+    }
+    a{color:#38bdf8;text-decoration:none}
+
+    /* ── layout ── */
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+    /* ── navbar ── */
+    nav{
+      position:sticky;top:0;z-index:50;
+      background:rgba(15,23,42,.85);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid #1e293b;
+      padding:14px 0;
+    }
+    nav .container{display:flex;align-items:center;justify-content:space-between}
+    nav .logo{font-weight:800;font-size:1.15rem;letter-spacing:-.03em}
+    nav .logo span{
+      background:linear-gradient(135deg,#38bdf8,#818cf8);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    nav ul{display:flex;gap:22px;list-style:none}
+    nav ul li a{font-size:.85rem;font-weight:500;color:#94a3b8;transition:color .2s}
+    nav ul li a:hover{color:#f8fafc}
+
+    /* ── hero ── */
+    .hero{
+      text-align:center;padding:80px 0 48px;
+      background:radial-gradient(ellipse at 50% 0%,rgba(56,189,248,.08) 0%,transparent 60%);
+    }
+    .hero h1{
+      font-size:2.6rem;font-weight:800;line-height:1.15;
+      background:linear-gradient(135deg,#f8fafc 30%,#38bdf8 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    .hero p{color:#94a3b8;max-width:620px;margin:16px auto 0;font-size:1.05rem}
+    .badge{
+      display:inline-block;margin-top:22px;padding:6px 16px;
+      border-radius:999px;font-size:.78rem;font-weight:600;
+      background:rgba(56,189,248,.12);color:#38bdf8;
+      border:1px solid rgba(56,189,248,.25);
+    }
+
+    /* ── section titles ── */
+    .section-title{
+      font-size:1.5rem;font-weight:700;margin-bottom:6px;
+    }
+    .section-sub{color:#64748b;font-size:.92rem;margin-bottom:28px}
+
+    /* ── cards ── */
+    .card{
+      background:#1e293b;border:1px solid #334155;border-radius:16px;
+      padding:28px;margin-bottom:28px;
+      transition:transform .2s,box-shadow .2s;
+    }
+    .card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.35)}
+
+    /* ── upload zone ── */
+    #upload-section{padding:48px 0}
+    .upload-zone{
+      border:2px dashed #334155;border-radius:16px;
+      padding:48px;text-align:center;cursor:pointer;
+      transition:border-color .25s,background .25s;
+    }
+    .upload-zone:hover,.upload-zone.dragover{
+      border-color:#38bdf8;background:rgba(56,189,248,.04);
+    }
+    .upload-zone p{color:#94a3b8;margin-top:8px}
+    .upload-zone .icon{font-size:2.4rem;margin-bottom:4px}
+    .upload-zone input[type=file]{display:none}
+
+    /* ── metrics grid ── */
+    .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:28px}
+    .metric-card{
+      background:linear-gradient(145deg,#1e293b 0%,#162032 100%);
+      border:1px solid #334155;border-radius:14px;padding:22px;text-align:center;
+    }
+    .metric-card .label{font-size:.78rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em}
+    .metric-card .value{font-size:1.55rem;font-weight:700;margin-top:4px}
+    .metric-card .model-name{font-size:.82rem;color:#38bdf8;margin-bottom:4px;font-weight:600}
+
+    /* ── predict form ── */
+    #predict-section{padding:48px 0}
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+    label{display:block;font-size:.82rem;font-weight:600;color:#94a3b8;margin-bottom:4px}
+    input[type=number],select{
+      width:100%;padding:10px 14px;border-radius:10px;border:1px solid #334155;
+      background:#0f172a;color:#e2e8f0;font-size:.95rem;
+      transition:border-color .2s;
+    }
+    input[type=number]:focus,select:focus{outline:none;border-color:#38bdf8}
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:12px 28px;border:none;border-radius:12px;
+      font-size:.95rem;font-weight:600;cursor:pointer;
+      transition:transform .15s,box-shadow .15s;
+    }
+    .btn-primary{
+      background:linear-gradient(135deg,#38bdf8,#818cf8);color:#0f172a;
+    }
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(56,189,248,.35)}
+    .btn-secondary{background:#334155;color:#e2e8f0}
+
+    /* ── result box ── */
+    .result-box{
+      margin-top:22px;padding:20px;border-radius:14px;
+      background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.18);
+      display:none;
+    }
+    .result-box.show{display:block;animation:fadeUp .35s ease}
+    .result-box .price{font-size:2rem;font-weight:800;color:#38bdf8}
+
+    /* ── charts ── */
+    #charts-section{padding:48px 0}
+    .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:22px}
+    .chart-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:18px;overflow:hidden}
+    .chart-card img{width:100%;border-radius:10px}
+    .chart-card .chart-title{font-weight:600;font-size:.9rem;margin-bottom:10px;color:#cbd5e1}
+
+    /* ── footer ── */
+    footer{
+      text-align:center;padding:32px 0;
+      border-top:1px solid #1e293b;color:#475569;font-size:.82rem;
+    }
+
+    /* ── status toast ── */
+    .toast{
+      position:fixed;bottom:28px;right:28px;
+      padding:14px 22px;border-radius:12px;
+      background:#1e293b;border:1px solid #334155;
+      color:#e2e8f0;font-size:.88rem;font-weight:500;
+      box-shadow:0 8px 30px rgba(0,0,0,.4);
+      transform:translateY(120%);opacity:0;
+      transition:transform .35s ease,opacity .35s ease;
+      z-index:100;
+    }
+    .toast.show{transform:translateY(0);opacity:1}
+
+    /* ── spinner ── */
+    .spinner{
+      display:inline-block;width:18px;height:18px;
+      border:2.5px solid rgba(255,255,255,.25);border-top-color:#38bdf8;
+      border-radius:50%;animation:spin .6s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── empty state ── */
+    .empty-state{text-align:center;padding:48px 20px;color:#64748b}
+    .empty-state .icon{font-size:3rem;margin-bottom:8px}
+
+    /* ── responsive ── */
+    @media(max-width:640px){
+      .hero h1{font-size:1.7rem}
+      .metrics-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="container">
+    <div class="logo"><span>📈 StockPredictor</span></div>
+    <ul>
+      <li><a href="#upload-section">Data</a></li>
+      <li><a href="#metrics-section">Metrics</a></li>
+      <li><a href="#predict-section">Predict</a></li>
+      <li><a href="#charts-section">Charts</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="container">
+    <h1>Stock Price Predictor</h1>
+    <p>A machine-learning powered tool that predicts stock closing prices using Decision Tree, Random Forest, and XGBoost models — built for the PDS course.</p>
+    <div class="badge">🧪 Python · scikit-learn · XGBoost · Flask</div>
+  </div>
+</section>
+
+<!-- ─── UPLOAD ─── -->
+<section id="upload-section">
+  <div class="container">
+    <h2 class="section-title">1&nbsp;&nbsp;Load Dataset</h2>
+    <p class="section-sub">Upload your <code>unclean_pds.csv</code> to run the full pipeline, or use the pre-loaded data if available.</p>
+
+    {% if loaded %}
+    <div class="card" style="border-color:#22c55e44;background:linear-gradient(145deg,#1e293b,#14281e)">
+      <p style="color:#4ade80;font-weight:600">✅ Data loaded & models trained ({{ companies|length }} companies: {{ companies|join(', ') }})</p>
+    </div>
+    {% endif %}
+
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('csvFile').click()">
+      <div class="icon">📂</div>
+      <p><strong>Click or drag & drop</strong> your CSV file here</p>
+      <input type="file" id="csvFile" accept=".csv" />
+    </div>
+  </div>
+</section>
+
+<!-- ─── METRICS ─── -->
+<section id="metrics-section" style="padding:48px 0">
+  <div class="container">
+    <h2 class="section-title">2&nbsp;&nbsp;Model Performance</h2>
+    <p class="section-sub">Evaluation results from the test set and 5-fold time-series cross-validation.</p>
+
+    {% if results %}
+    <div class="metrics-grid">
+      {% for model_name, m in results.items() %}
+        {% for metric, val in m.items() %}
+        <div class="metric-card">
+          <div class="model-name">{{ model_name }}</div>
+          <div class="label">{{ metric }}</div>
+          <div class="value" style="{% if 'R²' in metric %}color:#4ade80{% elif 'MSE' in metric %}color:#fb923c{% else %}color:#38bdf8{% endif %}">
+            {{ val }}
+          </div>
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">📊</div>
+      <p>Upload data to see model metrics</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ─── PREDICT ─── -->
+<section id="predict-section">
+  <div class="container">
+    <h2 class="section-title">3&nbsp;&nbsp;Make a Prediction</h2>
+    <p class="section-sub">Enter the previous day's Open & Close and today's Open to predict the closing price.</p>
+
+    <div class="card">
+      <div class="form-grid">
+        <div>
+          <label for="prevOpen">Previous Open</label>
+          <input type="number" id="prevOpen" step="0.01" placeholder="e.g. 150.25" />
+        </div>
+        <div>
+          <label for="prevClose">Previous Close</label>
+          <input type="number" id="prevClose" step="0.01" placeholder="e.g. 151.00" />
+        </div>
+        <div>
+          <label for="openPrice">Today's Open</label>
+          <input type="number" id="openPrice" step="0.01" placeholder="e.g. 152.50" />
+        </div>
+        <div>
+          <label for="modelSelect">Model</label>
+          <select id="modelSelect">
+            <option value="Random Forest">Random Forest</option>
+            <option value="Decision Tree">Decision Tree</option>
+            <option value="XGBoost">XGBoost</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button class="btn btn-primary" id="predictBtn" onclick="runPredict()">
+          🔮 Predict Close Price
+        </button>
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <p style="color:#94a3b8;font-size:.85rem;margin-bottom:4px" id="resultModel"></p>
+        <p class="price" id="resultPrice"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CHARTS ─── -->
+<section id="charts-section">
+  <div class="container">
+    <h2 class="section-title">4&nbsp;&nbsp;Visualizations</h2>
+    <p class="section-sub">Auto-generated charts from the trained models and dataset.</p>
+
+    {% if charts %}
+    <div class="chart-grid">
+      {% if charts.perf %}
+      <div class="chart-card" style="grid-column:1/-1">
+        <div class="chart-title">Model Performance Comparison</div>
+        <img src="data:image/png;base64,{{ charts.perf }}" alt="Performance chart" />
+      </div>
+      {% endif %}
+      {% if charts.pred %}
+      <div class="chart-card">
+        <div class="chart-title">Actual vs Predicted (Random Forest)</div>
+        <img src="data:image/png;base64,{{ charts.pred }}" alt="Prediction chart" />
+      </div>
+      {% endif %}
+      {% if charts.corr %}
+      <div class="chart-card">
+        <div class="chart-title">Feature Correlation Heatmap</div>
+        <img src="data:image/png;base64,{{ charts.corr }}" alt="Correlation heatmap" />
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">📉</div>
+      <p>Upload data to generate charts</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="container">
+    <p>Stock Price Predictor · PDS Course Final Project · Built with Python, scikit-learn, XGBoost & Flask</p>
+  </div>
+</footer>
+
+<!-- ─── TOAST ─── -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── toast ── */
+function showToast(msg, ms = 3500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+/* ── file upload ── */
+const dropZone = document.getElementById('dropZone');
+const csvInput = document.getElementById('csvFile');
+
+['dragenter','dragover'].forEach(ev =>
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); })
+);
+['dragleave','drop'].forEach(ev =>
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('dragover'); })
+);
+dropZone.addEventListener('drop', e => {
+  if (e.dataTransfer.files.length) uploadFile(e.dataTransfer.files[0]);
+});
+csvInput.addEventListener('change', () => {
+  if (csvInput.files.length) uploadFile(csvInput.files[0]);
+});
+
+async function uploadFile(file) {
+  if (!file.name.endsWith('.csv')) return showToast('⚠️ Please upload a .csv file');
+  showToast('⏳ Uploading & training models…', 15000);
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const res = await fetch('/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('✅ Models trained successfully! Reloading…');
+      setTimeout(() => location.reload(), 1200);
+    } else {
+      showToast('❌ ' + (data.error || 'Upload failed'));
+    }
+  } catch (err) {
+    showToast('❌ Network error');
+  }
+}
+
+/* ── prediction ── */
+async function runPredict() {
+  const prev_open  = document.getElementById('prevOpen').value;
+  const prev_close = document.getElementById('prevClose').value;
+  const open_price = document.getElementById('openPrice').value;
+  const model      = document.getElementById('modelSelect').value;
+
+  if (!prev_open || !prev_close || !open_price) return showToast('⚠️ Fill all fields');
+
+  const btn = document.getElementById('predictBtn');
+  btn.innerHTML = '<span class="spinner"></span> Predicting…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prev_open, prev_close, open: open_price, model }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      showToast('❌ ' + data.error);
+    } else {
+      const box = document.getElementById('resultBox');
+      document.getElementById('resultModel').textContent = `Predicted by ${data.model}`;
+      document.getElementById('resultPrice').textContent = `$${data.predicted_close}`;
+      box.classList.add('show');
+    }
+  } catch (err) {
+    showToast('❌ Network error');
+  } finally {
+    btn.innerHTML = '🔮 Predict Close Price';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
