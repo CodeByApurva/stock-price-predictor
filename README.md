@@ -139,7 +139,7 @@ The Flask frontend provides four sections:
 
 ## 📓 Jupyter Notebook
 
-The original analysis and experimentation is in [`final-project-devansh-2023800091.ipynb`](final-project-devansh-2023800091.ipynb). It includes:
+The original analysis    includes:
 
 - Detailed data cleaning with before/after visualizations
 - Missing value heatmaps
